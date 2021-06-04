@@ -65,4 +65,8 @@ void check_arg(Arguments* args){
         args->pwd_str = getpass("Enter the session password: ");
         args->pwd = 1;
     }
+    if(args->address_info.sin_port == 0){
+        fputs("Port could not parsed\n",stderr);
+        exit(1);
+    }
 }
