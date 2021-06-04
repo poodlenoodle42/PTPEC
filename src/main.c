@@ -1,8 +1,16 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include "arguments.h"
+#include "array.h"
 int main(int argc, char* argv[]){
     Arguments* args = parse_arguments(argc,argv);
+    Array arr;
+    array_init(&arr,0);
+    struct sockaddr_in s;
+    for(int i = 0; i<1000;i++){
+        array_add(&arr,&s);
+    }
+    /*
     initscr();
     int h,w;
     getmaxyx(stdscr,h,w);
@@ -32,4 +40,5 @@ int main(int argc, char* argv[]){
         wmove(input, 0, 0);
         wrefresh(input);
     }
+*/
 }
