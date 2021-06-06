@@ -1,12 +1,21 @@
 #pragma once
 #include <stdlib.h>
 #include <arpa/inet.h>
+#include <threads.h>
+
+typedef struct _Client_Info{
+    struct sockaddr_in addr;
+    int socket;
+}Client_Info;
+
 typedef struct _Array{
+    mtx_t lock;
     size_t size;
     size_t capacity;
-    struct sockaddr_in *buff;
+    Client_Info *buff;
 }Array;
 
-void array_init(Array* arr,size_t init_size);
-void array_add(Array* arr,const struct sockaddr_in *s);
-void array_remove(Array* arr,const struct sockaddr_in s);
+Array* array_new(size_t init_size);
+void array_add(Array* arr,const Client_Info *s);
+void array_remove(Array* arr,const Client_Info s);
+void array_destroy(Array* arr);

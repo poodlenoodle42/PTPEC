@@ -30,17 +30,19 @@ void tui_setup(){
 }
 
 
-void tui_write(const char* str, int error){
+void tui_write(const char* str, int error,...){
     mtx_lock(&output_lock);
+    va_list args;
+    va_start(args, str);
     if(error == 0){
-        waddstr(output,str);
+        vw_printw(output,str,args);
         wrefresh(output);
     } else {
-        int c;
-        for(c = (int)*str;(int)c != '\0';str++){
-            waddch(output,c | A_BOLD | COLOR_RED);
-        }
+        wattron(output,A_BOLD | COLOR_PAIR(3));
+        vw_printw(output,str,args);
         wrefresh(output);
+        wattron(output, A_NORMAL);
     }
+    va_end(args);
     mtx_unlock(&output_lock);
 }
