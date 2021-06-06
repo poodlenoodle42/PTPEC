@@ -2,9 +2,16 @@
 #include <stdlib.h>
 #include "arguments.h"
 #include "array.h"
+#include "tui.h"
 #include <crypt.h>
+#include <time.h>
 int main(int argc, char* argv[]){
+    srand(time(NULL));
     Arguments* args = parse_arguments(argc,argv);
+    tui_setup();
+    if(args->address == 0){
+        
+    }
     const char password[] = "password123";
     char* salt = crypt_gensalt("$5$",0,NULL,0);
     printf("Password: %s\n",password);
@@ -13,26 +20,7 @@ int main(int argc, char* argv[]){
     printf("Encrypted: %s\n",encrypted);
 
     /*
-    initscr();
-    int h,w;
-    getmaxyx(stdscr,h,w);
-    WINDOW* input = newwin(2,w-1,h-3,0);
-    WINDOW* output = newwin(h-3,w-1,0,0);
 
-    start_color();
-    init_pair(1, COLOR_BLACK, COLOR_WHITE);
-    init_pair(2, COLOR_WHITE, COLOR_BLACK);
-    wbkgd(input, COLOR_PAIR(1));
-    wbkgd(output, COLOR_PAIR(2));    
-    scrollok(output, TRUE);
-    scrollok(input, TRUE);
-    
-    
-    wclear(input);
-    wmove(input, 0, 0);
-    wclear(output);
-    wrefresh(input);
-    wrefresh(output);
     char str[1024];
     while(1){
         wgetnstr(input,str,1024);
