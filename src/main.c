@@ -2,14 +2,16 @@
 #include <stdlib.h>
 #include "arguments.h"
 #include "array.h"
+#include <crypt.h>
 int main(int argc, char* argv[]){
     Arguments* args = parse_arguments(argc,argv);
-    Array arr;
-    array_init(&arr,0);
-    struct sockaddr_in s;
-    for(int i = 0; i<1000;i++){
-        array_add(&arr,&s);
-    }
+    const char password[] = "password123";
+    char* salt = crypt_gensalt("$5$",0,NULL,0);
+    printf("Password: %s\n",password);
+    printf("Salt: %s\n",salt);
+    char* encrypted = crypt(password,salt);
+    printf("Encrypted: %s\n",encrypted);
+
     /*
     initscr();
     int h,w;
