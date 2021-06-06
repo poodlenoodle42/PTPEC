@@ -36,8 +36,26 @@ Message_Type validate_pwd_server(Connection_Info* conn_info){
         message_send(challenge_valid,conn_info);
         message_destroy(&challenge_response);
         return Challenge_Failed;
+    } 
+}
+
+Message_Type validate_pwd_client(Connection_Info* conn_info){
+    Message challenge;
+    Message challenge_response;
+    Message challenge_valid;
+    char * salt = NULL;
+    message_receive(&challenge,conn_info);
+    if(challenge_response.header.message_type != Challenge){
+        return Challenge_Failed;
     }
-    
+    salt = challenge.buffer;
+    char* hash = crypt(key_info.passwd,salt);
+    challenge_response.header.size = strlen(hash) +1;
+    challenge_response.header.message_type = Challenge_Response;
+    challenge_response.buffer = hash;
+    message_send(challenge_response,conn_info);
+    message_receive(&challenge_valid,conn_info);
+    return challenge_valid.header.message_type;
 }
 
 int listen_and_serve(void* v){
@@ -58,6 +76,8 @@ int listen_and_serve(void* v){
             if(validate_pwd_server(conn_info) == Challenge_Passed){
                 thrd_t client_thread;
                 thrd_create(&client_thread,handle_connection,conn_info);
+            } else{
+                close(client_socket);
             }
         }
     }
