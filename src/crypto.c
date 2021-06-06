@@ -19,6 +19,12 @@ External_Key_Information random_external_key_info(void){
 
 
 //From the Openssl Wiki https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption
+void handleErrors(void)
+{
+    ERR_print_errors_fp(stderr);
+    abort();
+}
+
 int encrypt(unsigned char *plaintext, int plaintext_len, unsigned char *key,
             unsigned char *iv, unsigned char *ciphertext){
     EVP_CIPHER_CTX *ctx;

@@ -15,7 +15,7 @@ if((val) < 0){\
 
 typedef struct _Conn_Info{
     Client_Info client_info;
-    int challenge_passed = 0;
+    int challenge_passed;
 }Connection_Info;
 
 void connection_setup_listen_socket(struct sockaddr_in address);
