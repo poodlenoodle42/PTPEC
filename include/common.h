@@ -1,3 +1,5 @@
 #pragma once
 #define DEFAULT_PORT 16103
-#define USER_NAME "u"
+
+
+void strrnd(char * str, size_t len);
