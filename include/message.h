@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "connection.h"
 typedef enum Message_Type{
     Register_Username, //Buffer contains username
     Get_Peers, //Buffer contains struct sockaddr_in 's of other peers
@@ -22,5 +23,8 @@ typedef struct _Message{
     char* buffer;
 }Message;
 
-int send_message(const Message msg, int socket);
-int receive_message(Message* msg,int socket);
+
+
+int message_send(const Message msg, Connection_Info* conn_info);
+int message_receive(Message* msg,Connection_Info* conn_info);
+void message_destroy(Message* msg);
