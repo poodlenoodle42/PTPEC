@@ -4,6 +4,7 @@
 #include <threads.h>
 
 typedef struct _Client_Info{
+    
     struct sockaddr_in addr;
     int socket;
 }Client_Info;

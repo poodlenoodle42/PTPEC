@@ -48,4 +48,5 @@ int message_receive(Message* msg,Connection_Info* conn_info){
 void message_destroy(Message* msg){
     if(msg->buffer != NULL)
         free(msg->buffer);
+    msg->buffer = NULL;
 }

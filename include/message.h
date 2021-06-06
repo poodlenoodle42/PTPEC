@@ -10,6 +10,7 @@ typedef enum Message_Type{
     Challenge_Failed, //Buffer is empty
     Text_Message, //Buffer contains text of message
     Text_Message_Encrypted, //Buffer contains encrypted text message
+    Send_Username, //Buffer contains username
     Leave //Buffer is empty
 }Message_Type;
 

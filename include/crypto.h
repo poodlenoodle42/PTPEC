@@ -7,7 +7,7 @@ typedef struct _External{
 }External_Key_Information;
 
 typedef struct _Internal{
-    int external_init = 0;
+    int external_init;
     External_Key_Information ex_key_info;
 
     uint8_t key[32];
@@ -16,7 +16,7 @@ typedef struct _Internal{
 
 extern Internal_Key_Information key_info;
 
-void fill_key_info(const char* pwd, External_Key_Information ex_key_info);
+void fill_key_info(char* pwd, External_Key_Information ex_key_info);
 External_Key_Information random_external_key_info(void);
 
 

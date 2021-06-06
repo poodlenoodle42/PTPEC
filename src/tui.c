@@ -30,7 +30,7 @@ void tui_setup(){
 }
 
 
-void tui_write(const char* str, int error,...){
+void tui_write(int error ,const char* str,...){
     mtx_lock(&output_lock);
     va_list args;
     va_start(args, str);

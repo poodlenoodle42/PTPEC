@@ -11,6 +11,7 @@ if((val) < 0){\
 #define SOCKET_ERROR(val, msg, ...) \
 if((val) < 0){\
     tui_write_error(msg __VA_OPT__(,) __VA_ARGS__); \
+    return; \
 }
 
 typedef struct _Conn_Info{
@@ -19,3 +20,4 @@ typedef struct _Conn_Info{
 }Connection_Info;
 
 void connection_setup_listen_socket(struct sockaddr_in address);
+int handle_connection(void* connection_info);
