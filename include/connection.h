@@ -11,7 +11,7 @@ if((val) < 0){\
 #define SOCKET_ERROR(val, msg, ...) \
 if((val) < 0){\
     tui_write_error(msg __VA_OPT__(,) __VA_ARGS__); \
-    return; \
+    return 0; \
 }
 
 typedef struct _Conn_Info{

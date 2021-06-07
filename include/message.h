@@ -5,6 +5,8 @@ typedef enum Message_Type{
     Register_Username, //Buffer contains username
     Request_Peers, //Buffer contains nothing
     Send_Peers, //Buffer contains struct sockaddr_in of other peers
+    Request_External_Key_Info, //Buffer is empty
+    Send_External_Key_Info, //Buffer contains external key info
     Challenge, //Buffer contains challenge salt
     Challenge_Response, //Buffer contains hash
     Challenge_Passed, //Buffer is empty

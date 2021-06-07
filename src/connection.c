@@ -88,6 +88,10 @@ int listen_and_serve(void* v){
     }
 }
 
+void connection_setup_external_peer(struct sockaddr_in address){
+
+}
+
 void connection_setup_listen_socket(struct sockaddr_in address){
     int server_socket;
     address.sin_addr.s_addr = INADDR_ANY;
@@ -112,6 +116,7 @@ int handle_connection(void* connection_info){
             case Send_Username:
                 username = malloc(msg.header.size);
                 strcpy(username,msg.buffer);
+                message_destroy(&msg);
                 break;
             case Text_Message_Encrypted:
                 if(username == NULL)
@@ -128,7 +133,7 @@ int handle_connection(void* connection_info){
                 }
                 msg.header.message_type = Send_Peers;
                 msg.header.size = existing_connections->size;
-                msg.buffer = peers_buffer;
+                msg.buffer = (char*)peers_buffer;
                 SOCKET_ERROR(message_send(msg,conn_info),"Error sending peers to %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr))
                 free(peers_buffer);
                 break;
@@ -141,7 +146,8 @@ int handle_connection(void* connection_info){
                     conn.addr = ((struct sockaddr_in*)msg.buffer)[i];
                     array_add(existing_connections,&conn);
                 }
-                break;       
+                message_destroy(&msg);
+                break;
             default:
                 if(username == NULL)
                     tui_write_error("Unknown message type from %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr));
