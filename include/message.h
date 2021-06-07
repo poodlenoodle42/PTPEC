@@ -2,7 +2,8 @@
 #include <stdint.h>
 #include "connection.h"
 typedef enum Message_Type{
-    Register_Username, //Buffer contains username
+    Request_Username, //Buffer empty
+    Send_Username, //Buffer contains username
     Request_Peers, //Buffer contains nothing
     Send_Peers, //Buffer contains struct sockaddr_in of other peers
     Request_External_Key_Info, //Buffer is empty
@@ -13,7 +14,6 @@ typedef enum Message_Type{
     Challenge_Failed, //Buffer is empty
     Text_Message, //Buffer contains text of message
     Text_Message_Encrypted, //Buffer contains encrypted text message
-    Send_Username, //Buffer contains username
     Leave //Buffer is empty
 }Message_Type;
 

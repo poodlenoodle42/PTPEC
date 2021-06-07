@@ -7,22 +7,27 @@
 #include <time.h>
 #include "connection.h"
 #include "common.h"
+#include "crypto.h"
 int main(int argc, char* argv[]){
     srand(time(NULL));
     Arguments* args = parse_arguments(argc,argv);
+
+    key_info.passwd = args->pwd_str;
+    key_info.ex_key_info = random_external_key_info();
+    fill_key_info(key_info.passwd,key_info.ex_key_info);
+
+    nickname = args->nickname_str;
+
     tui_setup();
     existing_connections = array_new(INIT_CONNECTION_ARRAY_SIZE);
     if(args->address == 0){
         connection_setup_listen_socket(args->address_info);
     } else {
-        
+        connection_setup_external_peer(args->address_info);
     }
-    const char password[] = "password123";
-    char* salt = crypt_gensalt("$5$",0,NULL,0);
-    printf("Password: %s\n",password);
-    printf("Salt: %s\n",salt);
-    char* encrypted = crypt(password,salt);
-    printf("Encrypted: %s\n",encrypted);
+    while(1){
+        thrd_yield();
+    }
 
     /*
 
