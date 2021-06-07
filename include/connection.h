@@ -19,5 +19,7 @@ typedef struct _Conn_Info{
     int challenge_passed;
 }Connection_Info;
 
+extern Array* existing_connections;
 void connection_setup_listen_socket(struct sockaddr_in address);
+void connection_setup_external_peer(struct sockaddr_in address);
 int handle_connection(void* connection_info);

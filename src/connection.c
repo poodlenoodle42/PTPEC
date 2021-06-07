@@ -7,7 +7,11 @@
 #include "common.h"
 #include <string.h>
 #include "crypto.h"
+#include <unistd.h>
+#include "array.h"
 thrd_t server_thread;
+Array* existing_connections;
+
 
 Message_Type validate_pwd_server(Connection_Info* conn_info){
     char* salt = crypt_gensalt("$6$",0,NULL,0);
@@ -74,6 +78,7 @@ int listen_and_serve(void* v){
             conn_info->client_info.addr = client_addr;
             conn_info->client_info.socket = client_socket;
             if(validate_pwd_server(conn_info) == Challenge_Passed){
+                conn_info->challenge_passed = 1;
                 thrd_t client_thread;
                 thrd_create(&client_thread,handle_connection,conn_info);
             } else{
@@ -114,11 +119,34 @@ int handle_connection(void* connection_info){
                 else
                     tui_write_default("%s > %s \n",username,msg.buffer);
                 break;
+            case Request_Peers:
+                if(conn_info->challenge_passed == 0)
+                    break;
+                struct sockaddr_in* peers_buffer = malloc(existing_connections->size * sizeof(struct sockaddr_in));
+                for(int i = 0; i<existing_connections->size;++i){
+                    peers_buffer[i] = existing_connections->buff[i].addr;
+                }
+                msg.header.message_type = Send_Peers;
+                msg.header.size = existing_connections->size;
+                msg.buffer = peers_buffer;
+                SOCKET_ERROR(message_send(msg,conn_info),"Error sending peers to %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr))
+                free(peers_buffer);
+                break;
+            case Send_Peers:
+                if(existing_connections->size > 0)
+                     break;
+                for(int i = 0; i < msg.header.size; i++){
+                    Client_Info conn;
+                    conn.socket = 0;
+                    conn.addr = ((struct sockaddr_in*)msg.buffer)[i];
+                    array_add(existing_connections,&conn);
+                }
+                break;       
             default:
                 if(username == NULL)
-                    tui_write_error("Unknown message type from %s",inet_ntoa(conn_info->client_info.addr.sin_addr));
+                    tui_write_error("Unknown message type from %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr));
                 else 
-                    tui_write_error("Unknown message type from %s",username);
+                    tui_write_error("Unknown message type from %s\n",username);
         }
     }
 }

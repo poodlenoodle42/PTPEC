@@ -3,7 +3,8 @@
 #include "connection.h"
 typedef enum Message_Type{
     Register_Username, //Buffer contains username
-    Get_Peers, //Buffer contains struct sockaddr_in 's of other peers
+    Request_Peers, //Buffer contains nothing
+    Send_Peers, //Buffer contains struct sockaddr_in of other peers
     Challenge, //Buffer contains challenge salt
     Challenge_Response, //Buffer contains hash
     Challenge_Passed, //Buffer is empty

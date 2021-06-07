@@ -5,11 +5,16 @@
 #include "tui.h"
 #include <crypt.h>
 #include <time.h>
+#include "connection.h"
+#include "common.h"
 int main(int argc, char* argv[]){
     srand(time(NULL));
     Arguments* args = parse_arguments(argc,argv);
     tui_setup();
+    existing_connections = array_new(INIT_CONNECTION_ARRAY_SIZE);
     if(args->address == 0){
+        connection_setup_listen_socket(args->address_info);
+    } else {
         
     }
     const char password[] = "password123";
