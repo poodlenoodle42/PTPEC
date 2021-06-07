@@ -53,6 +53,7 @@ Arguments* parse_arguments(int argc, char* argv[]){
         }
     }
     check_arg(&args);
+    args.address_info.sin_family = AF_INET;
     return &args;
 }
 

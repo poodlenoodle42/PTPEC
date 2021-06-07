@@ -49,7 +49,7 @@ Message_Type validate_pwd_client(Connection_Info* conn_info){
     Message challenge_valid;
     char * salt = NULL;
     message_receive(&challenge,conn_info);
-    if(challenge_response.header.message_type != Challenge){
+    if(challenge.header.message_type != Challenge){
         return Challenge_Failed;
     }
     salt = challenge.buffer;
@@ -112,12 +112,15 @@ int connection_setup_external_peer(struct sockaddr_in address){
     SOCKET_ERROR(message_send(rq_peers,&conn_info),
     "Error requesting peers from %s\n",inet_ntoa(conn_info.client_info.addr.sin_addr));
 
-        rq_peers.buffer = NULL;
-    rq_peers.header.message_type = Request_External_Key_Info;
-    rq_peers.header.size = 0; 
+    rq_external_key_info.buffer = NULL;
+    rq_external_key_info.header.message_type = Request_External_Key_Info;
+    rq_external_key_info.header.size = 0; 
     SOCKET_ERROR(message_send(rq_external_key_info,&conn_info),
     "Error requesting external key info from %s\n",inet_ntoa(conn_info.client_info.addr.sin_addr));
-
+    Connection_Info* con_p = malloc(sizeof(Connection_Info));
+    *con_p = conn_info;
+    thrd_t client_thread;
+    thrd_create(&client_thread,handle_connection,con_p);
 }
 
 void connection_setup_listen_socket(struct sockaddr_in address){
@@ -136,10 +139,14 @@ void connection_setup_listen_socket(struct sockaddr_in address){
     thrd_create(&server_thread,listen_and_serve,s);
 }
 
+void connect_to_all(const struct sockaddr_in* buf,int len){
+
+}
+
 int handle_connection(void* connection_info){
     Connection_Info* conn_info = (Connection_Info*)connection_info;
     Message msg;
-
+    array_add(existing_connections,conn_info);
     msg.header.message_type = Request_Username;
     msg.header.size = 0;
 
@@ -159,6 +166,7 @@ int handle_connection(void* connection_info){
                 msg.buffer = nickname;
                 SOCKET_ERROR(message_send(msg,conn_info),
                 "Error sending username to %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr))
+                break;
             case Text_Message_Encrypted:
                 if(username == NULL)
                     tui_write_default("Unknown User > %s \n",msg.buffer);
@@ -190,7 +198,7 @@ int handle_connection(void* connection_info){
                 message_destroy(&msg);
                 break;
             case Send_Peers:
-                if(existing_connections->size > 0)
+                if(existing_connections->size > 1)
                      break;
                 for(int i = 0; i < msg.header.size; i++){
                     Client_Info conn;
