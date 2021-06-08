@@ -16,6 +16,7 @@ void tui_setup(){
     init_pair(1, COLOR_BLACK, COLOR_WHITE);
     init_pair(2, COLOR_WHITE, COLOR_BLACK);
     init_pair(3,COLOR_RED,COLOR_BLACK);
+    init_pair(4,COLOR_CYAN,COLOR_BLACK);
     wbkgd(input, COLOR_PAIR(1));
     wbkgd(output, COLOR_PAIR(2));    
     scrollok(output, TRUE);
@@ -38,11 +39,18 @@ void tui_write(int error ,const char* str,...){
         vw_printw(output,str,args);
         wrefresh(output);
     } else {
-        wattron(output,A_BOLD | COLOR_PAIR(3));
+        wattron(output,A_BOLD | COLOR_PAIR(error + 2));
         vw_printw(output,str,args);
         wrefresh(output);
-        wattron(output, A_NORMAL);
+        wattron(output, A_NORMAL | COLOR_PAIR(2));
     }
     va_end(args);
     mtx_unlock(&output_lock);
+}
+
+void tui_read(char* buf,size_t size){
+    wgetnstr(input,buf,size);
+    wclear(input);
+    wmove(input, 0, 0);
+    wrefresh(input);
 }

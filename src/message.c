@@ -7,7 +7,7 @@ int message_send(const Message msg, Connection_Info* conn_info){
     Message_Header header = msg.header;
     char* buff = msg.buffer;
     if(header.message_type == Text_Message_Encrypted){
-        char* encrypted = malloc(header.size + 128);
+        char* encrypted = malloc(header.size + 16);
         int encrypted_length = encrypt(buff,header.size,key_info.key,key_info.ex_key_info.iv,encrypted);
         buff = encrypted;
         header.size = encrypted_length;
@@ -19,7 +19,7 @@ int message_send(const Message msg, Connection_Info* conn_info){
     &header,sizeof(Message_Header),0))
     MESSAGE_SOCKET_ERROR(send(conn_info->client_info.socket,
     buff,final_size,0))
-    if(header.message_type == Text_Message_Encrypted)
+    if(ntohl(header.message_type) == Text_Message_Encrypted)
         free(buff);
 }
 int message_receive(Message* msg,Connection_Info* conn_info){

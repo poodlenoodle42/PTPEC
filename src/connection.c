@@ -121,6 +121,7 @@ int connection_setup_external_peer(struct sockaddr_in address){
     *con_p = conn_info;
     thrd_t client_thread;
     thrd_create(&client_thread,handle_connection,con_p);
+    connection_setup_listen_socket(address);
 }
 
 void connection_setup_listen_socket(struct sockaddr_in address){
@@ -139,7 +140,28 @@ void connection_setup_listen_socket(struct sockaddr_in address){
     thrd_create(&server_thread,listen_and_serve,s);
 }
 
-void connect_to_all(const struct sockaddr_in* buf,int len){
+void connect_to_all(){
+    int peer_socket;
+    for(int i = 0; i<existing_connections->size;i++){
+        Connection_Info* conn_info;
+        if(existing_connections->buff[i].socket == 0){
+            conn_info = malloc(sizeof(Connection_Info));
+            conn_info->client_info = existing_connections->buff[i];
+            conn_info->challenge_passed = 0;
+            SOCKET_ERROR_DIE(peer_socket = 
+            socket(AF_INET,SOCK_STREAM,0),"Failed to create socket\n");
+            existing_connections->buff[i].socket = peer_socket;
+            SOCKET_ERROR_DIE(connect(peer_socket,(struct sockaddr*)&existing_connections->buff[i].addr,sizeof(struct sockaddr_in)),
+            "Error connecting to peer\n")
+
+            if(validate_pwd_client(conn_info) != Challenge_Passed){
+                close(peer_socket);
+                exit(0);
+            }
+            thrd_t client_thread;
+            thrd_create(&client_thread,handle_connection,conn_info);
+        }
+    }
 
 }
 
@@ -169,9 +191,9 @@ int handle_connection(void* connection_info){
                 break;
             case Text_Message_Encrypted:
                 if(username == NULL)
-                    tui_write_default("Unknown User > %s \n",msg.buffer);
+                    tui_write_default("\nUnknown User > %s \n",msg.buffer);
                 else
-                    tui_write_default("%s > %s \n",username,msg.buffer);
+                    tui_write_default("\n%s > %s \n",username,msg.buffer);
                 break;
             case Request_Peers:
                 if(conn_info->challenge_passed == 0)
@@ -213,6 +235,7 @@ int handle_connection(void* connection_info){
                     conn.addr = ((struct sockaddr_in*)msg.buffer)[i];
                     array_add(existing_connections,&conn);
                 }
+                connect_to_all();
                 message_destroy(&msg);
                 break;
             default:
