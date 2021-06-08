@@ -146,7 +146,7 @@ void connect_to_all(const struct sockaddr_in* buf,int len){
 int handle_connection(void* connection_info){
     Connection_Info* conn_info = (Connection_Info*)connection_info;
     Message msg;
-    array_add(existing_connections,conn_info);
+    array_add(existing_connections,&conn_info->client_info);
     msg.header.message_type = Request_Username;
     msg.header.size = 0;
 
@@ -176,12 +176,17 @@ int handle_connection(void* connection_info){
             case Request_Peers:
                 if(conn_info->challenge_passed == 0)
                     break;
-                struct sockaddr_in* peers_buffer = malloc(existing_connections->size * sizeof(struct sockaddr_in));
+                struct sockaddr_in* peers_buffer = malloc((existing_connections->size-1) * sizeof(struct sockaddr_in));
+                int add_i;
                 for(int i = 0; i<existing_connections->size;++i){
-                    peers_buffer[i] = existing_connections->buff[i].addr;
+                    if(existing_connections->buff[i].socket != conn_info->client_info.socket){
+                        add_i = i;
+                        peers_buffer[add_i] = existing_connections->buff[i].addr;
+                    } 
+
                 }
                 msg.header.message_type = Send_Peers;
-                msg.header.size = existing_connections->size;
+                msg.header.size = existing_connections->size - 1;
                 msg.buffer = (char*)peers_buffer;
                 SOCKET_ERROR(message_send(msg,conn_info),"Error sending peers to %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr))
                 free(peers_buffer);
@@ -195,7 +200,9 @@ int handle_connection(void* connection_info){
                 break;
             case Send_External_Key_Info:
                 memcpy(&key_info.ex_key_info,msg.buffer,msg.header.size);
+                key_info.external_init = 1;
                 message_destroy(&msg);
+                fill_key_info();
                 break;
             case Send_Peers:
                 if(existing_connections->size > 1)

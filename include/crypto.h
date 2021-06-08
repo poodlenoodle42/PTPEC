@@ -16,8 +16,8 @@ typedef struct _Internal{
 
 extern Internal_Key_Information key_info;
 
-void fill_key_info(char* pwd, External_Key_Information ex_key_info);
-External_Key_Information random_external_key_info(void);
+void fill_key_info();
+void random_external_key_info(void);
 
 
 //From the Openssl Wiki https://wiki.openssl.org/index.php/EVP_Symmetric_Encryption_and_Decryption

@@ -5,15 +5,14 @@
 #include <openssl/rand.h>
 #include <openssl/err.h>
 Internal_Key_Information key_info;
-void fill_key_info(char* pwd, External_Key_Information ex_key_info){
-    PKCS5_PBKDF2_HMAC(pwd,strlen(pwd),ex_key_info.salt,PKCS5_SALT_LEN,PBKDF_ITERATIONS,EVP_sha256(),32,key_info.key);
-    key_info.passwd = pwd;
-    key_info.external_init = 1;
-    key_info.ex_key_info = ex_key_info;
+void fill_key_info(){
+    if(key_info.external_init == 0)
+        return;
+    PKCS5_PBKDF2_HMAC(key_info.passwd,strlen(key_info.passwd),key_info.ex_key_info.salt,PKCS5_SALT_LEN,PBKDF_ITERATIONS,EVP_sha256(),32,key_info.key);
 }
 
-External_Key_Information random_external_key_info(void){
-    RAND_bytes(key_info.ex_key_info.iv,PKCS5_SALT_LEN);
+void random_external_key_info(void){
+    RAND_bytes(key_info.ex_key_info.salt,PKCS5_SALT_LEN);
     RAND_bytes(key_info.ex_key_info.iv,16);
     key_info.external_init = 1;
 }
