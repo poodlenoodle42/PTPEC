@@ -11,6 +11,7 @@
 #include "array.h"
 #include <errno.h>
 thrd_t server_thread;
+in_port_t port;
 Array* existing_connections;
 char* nickname;
 Message_Type validate_pwd_server(Connection_Info* conn_info){
@@ -126,6 +127,7 @@ int connection_setup_external_peer(struct sockaddr_in address){
 
 void connection_setup_listen_socket(struct sockaddr_in address){
     int server_socket;
+    port = address.sin_port;
     address.sin_addr.s_addr = INADDR_ANY;
     SOCKET_ERROR_DIE(server_socket = 
     socket(AF_INET,SOCK_STREAM,0),"Failed to create server socket\n");
@@ -147,6 +149,7 @@ void connect_to_all(){
         if(existing_connections->buff[i].socket == 0){
             conn_info = malloc(sizeof(Connection_Info));
             conn_info->client_info = existing_connections->buff[i];
+            conn_info->client_info.addr.sin_port = port;
             conn_info->challenge_passed = 0;
             SOCKET_ERROR_DIE(peer_socket = 
             socket(AF_INET,SOCK_STREAM,0),"Failed to create socket\n");
@@ -208,7 +211,7 @@ int handle_connection(void* connection_info){
 
                 }
                 msg.header.message_type = Send_Peers;
-                msg.header.size = existing_connections->size - 1;
+                msg.header.size = (existing_connections->size - 1) * sizeof(struct sockaddr_in);
                 msg.buffer = (char*)peers_buffer;
                 SOCKET_ERROR(message_send(msg,conn_info),"Error sending peers to %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr))
                 free(peers_buffer);
@@ -229,7 +232,7 @@ int handle_connection(void* connection_info){
             case Send_Peers:
                 if(existing_connections->size > 1)
                      break;
-                for(int i = 0; i < msg.header.size; i++){
+                for(int i = 0; i < msg.header.size / sizeof(struct sockaddr_in); i++){
                     Client_Info conn;
                     conn.socket = 0;
                     conn.addr = ((struct sockaddr_in*)msg.buffer)[i];
