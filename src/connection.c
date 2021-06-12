@@ -154,13 +154,16 @@ void connect_to_all(){
             SOCKET_ERROR_DIE(peer_socket = 
             socket(AF_INET,SOCK_STREAM,0),"Failed to create socket\n");
             existing_connections->buff[i].socket = peer_socket;
+            conn_info->client_info.socket = peer_socket;
             SOCKET_ERROR_DIE(connect(peer_socket,(struct sockaddr*)&existing_connections->buff[i].addr,sizeof(struct sockaddr_in)),
-            "Error connecting to peer\n")
+            "Error connecting to peer %s on port %u with error %d\n", 
+            inet_ntoa(conn_info->client_info.addr.sin_addr),ntohs(conn_info->client_info.addr.sin_port),errno)
 
             if(validate_pwd_client(conn_info) != Challenge_Passed){
                 close(peer_socket);
                 exit(0);
             }
+            conn_info->challenge_passed = 1;
             thrd_t client_thread;
             thrd_create(&client_thread,handle_connection,conn_info);
         }
@@ -246,6 +249,7 @@ int handle_connection(void* connection_info){
                     tui_write_error("Unknown message type from %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr));
                 else 
                     tui_write_error("Unknown message type from %s\n",username);
+                break;
         }
     }
 }
