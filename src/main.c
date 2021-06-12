@@ -10,6 +10,8 @@
 #include "crypto.h"
 #include <unistd.h>
 #include "message.h"
+
+
 int main(int argc, char* argv[]){
     srand(time(NULL));
     Arguments* args = parse_arguments(argc,argv);
