@@ -102,7 +102,7 @@ int connection_setup_external_peer(struct sockaddr_in address){
     conn_info.client_info.socket = peer_socket;
     SOCKET_ERROR_DIE(connect(peer_socket,(struct sockaddr*)&address,sizeof(struct sockaddr_in)),
     "Error connecting to peer %s on port %u with error %d\n", 
-    inet_ntoa(conn_info->client_info.addr.sin_addr),ntohs(conn_info->client_info.addr.sin_port),errno)
+    inet_ntoa(conn_info.client_info.addr.sin_addr),ntohs(conn_info.client_info.addr.sin_port),errno)
 
     if(validate_pwd_client(&conn_info) != Challenge_Passed){
         close(peer_socket);
