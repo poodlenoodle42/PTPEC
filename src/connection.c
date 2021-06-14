@@ -245,6 +245,13 @@ int handle_connection(void* connection_info){
                 connect_to_all();
                 message_destroy(&msg);
                 break;
+            case Leave:
+                array_remove(existing_connections,conn_info->client_info);
+                if(username != NULL)
+                    tui_write_error("\n%s is leaving.\n", username);
+                else
+                    tui_write_error("\n%s is leaving.\n", inet_ntoa(conn_info->client_info.addr.sin_addr));
+                goto end;
             default:
                 if(username == NULL)
                     tui_write_error("Unknown message type from %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr));
@@ -253,4 +260,9 @@ int handle_connection(void* connection_info){
                 break;
         }
     }
+end:
+    free(conn_info);
+    if(username != NULL)
+        free(username);
+    
 }

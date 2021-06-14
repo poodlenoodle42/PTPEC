@@ -10,12 +10,17 @@
 #include "crypto.h"
 #include <unistd.h>
 #include "message.h"
+#include <signal.h>
+static volatile sig_atomic_t sigint = false;
 
+void sigint_handler(int s){
+    sigint = true;
+}
 
 int main(int argc, char* argv[]){
     srand(time(NULL));
     Arguments* args = parse_arguments(argc,argv);
-
+    signal(SIGINT,sigint_handler);
     key_info.passwd = args->pwd_str;
 
 
@@ -35,7 +40,7 @@ int main(int argc, char* argv[]){
     Message msg;
     Connection_Info conn_info;
     char str[1024];
-    while(1){
+    while(!sigint){
         tui_read(str,1024);
         tui_write_green("\nYou > %s\n",str);
         mtx_lock(&existing_connections->lock);
@@ -50,5 +55,14 @@ int main(int argc, char* argv[]){
         }
         mtx_unlock(&existing_connections->lock);
     }
-
+    Message leave_msg;
+    msg.buffer = NULL;
+    msg.header.size = 0;
+    msg.header.message_type = Leave;
+    for(int i = 0;i<existing_connections->size;i++){
+        Connection_Info conn_info;
+        conn_info.challenge_passed = 1;
+        conn_info.client_info = existing_connections->buff[i];
+        message_send(msg,&conn_info);
+    }
 }
