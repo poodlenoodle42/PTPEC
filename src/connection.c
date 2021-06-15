@@ -264,5 +264,5 @@ end:
     free(conn_info);
     if(username != NULL)
         free(username);
-    
+    close(conn_info->client_info.socket);
 }

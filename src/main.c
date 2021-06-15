@@ -11,16 +11,43 @@
 #include <unistd.h>
 #include "message.h"
 #include <signal.h>
-static volatile sig_atomic_t sigint = false;
-
+static cnd_t sigint;
+static mtx_t sigint_lock;
 void sigint_handler(int s){
-    sigint = true;
+    cnd_signal(&sigint);
+}
+
+int cleanup(void* _){
+    mtx_lock(&sigint_lock);
+    cnd_wait(&sigint,&sigint_lock);
+    mtx_lock(&existing_connections->lock);
+    Message leave_msg;
+    leave_msg.buffer = NULL;
+    leave_msg.header.size = 0;
+    leave_msg.header.message_type = Leave;
+    for(int i = 0;i<existing_connections->size;i++){
+        Connection_Info conn_info;
+        conn_info.challenge_passed = 1;
+        conn_info.client_info = existing_connections->buff[i];
+        message_send(leave_msg,&conn_info);
+        close(conn_info.client_info.socket);
+    }
+    mtx_unlock(&existing_connections->lock);
+    mtx_unlock(&sigint_lock);
+    exit(0);
 }
 
 int main(int argc, char* argv[]){
     srand(time(NULL));
     Arguments* args = parse_arguments(argc,argv);
+
+
+    cnd_init(&sigint);
     signal(SIGINT,sigint_handler);
+    thrd_t sigint_thread;
+    thrd_create(&sigint_thread,cleanup,NULL);
+
+
     key_info.passwd = args->pwd_str;
 
 
@@ -40,7 +67,7 @@ int main(int argc, char* argv[]){
     Message msg;
     Connection_Info conn_info;
     char str[1024];
-    while(!sigint){
+    while(1){
         tui_read(str,1024);
         tui_write_green("\nYou > %s\n",str);
         mtx_lock(&existing_connections->lock);
@@ -55,14 +82,5 @@ int main(int argc, char* argv[]){
         }
         mtx_unlock(&existing_connections->lock);
     }
-    Message leave_msg;
-    msg.buffer = NULL;
-    msg.header.size = 0;
-    msg.header.message_type = Leave;
-    for(int i = 0;i<existing_connections->size;i++){
-        Connection_Info conn_info;
-        conn_info.challenge_passed = 1;
-        conn_info.client_info = existing_connections->buff[i];
-        message_send(msg,&conn_info);
-    }
+
 }
