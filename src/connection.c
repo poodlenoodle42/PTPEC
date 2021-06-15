@@ -182,12 +182,14 @@ int handle_connection(void* connection_info){
     SOCKET_ERROR(message_send(msg,conn_info),
     "Error requesting username from %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr))
     char* username = NULL;
+    tui_write_default("%s joined the chat\n",inet_ntoa(conn_info->client_info.addr.sin_addr));
     while(message_receive(&msg,conn_info) != -1){
         switch (msg.header.message_type){
             case Send_Username:
                 username = malloc(msg.header.size);
                 strcpy(username,msg.buffer);
                 message_destroy(&msg);
+                tui_write_default("%s has the username %s\n",inet_ntoa(conn_info->client_info.addr.sin_addr),username);
                 break;
             case Request_Username:
                 msg.header.message_type = Send_Username;

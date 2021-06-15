@@ -21,8 +21,8 @@ void tui_setup(){
     wbkgd(output, COLOR_PAIR(2));    
     scrollok(output, TRUE);
     scrollok(input, TRUE);
-    
-    
+    keypad(input, TRUE);
+    nocbreak();
     wclear(input);
     wmove(input, 0, 0);
     wclear(output);

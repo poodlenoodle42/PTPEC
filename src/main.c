@@ -11,16 +11,18 @@
 #include <unistd.h>
 #include "message.h"
 #include <signal.h>
+#include <stdlib.h>
 static cnd_t sigint;
 static mtx_t sigint_lock;
 void sigint_handler(int s){
-    cnd_signal(&sigint);
+    cnd_broadcast(&sigint);
 }
 
 int cleanup(void* _){
     mtx_lock(&sigint_lock);
     cnd_wait(&sigint,&sigint_lock);
     mtx_lock(&existing_connections->lock);
+    printf("Cleanup Handler called\n");
     Message leave_msg;
     leave_msg.buffer = NULL;
     leave_msg.header.size = 0;
@@ -33,6 +35,7 @@ int cleanup(void* _){
         close(conn_info.client_info.socket);
     }
     mtx_unlock(&existing_connections->lock);
+    endwin();
     mtx_unlock(&sigint_lock);
     exit(0);
 }
@@ -43,7 +46,11 @@ int main(int argc, char* argv[]){
 
 
     cnd_init(&sigint);
-    signal(SIGINT,sigint_handler);
+
+    struct sigaction act;
+    act.sa_handler = sigint_handler;
+    sigaction(SIGINT, &act, NULL);
+
     thrd_t sigint_thread;
     thrd_create(&sigint_thread,cleanup,NULL);
 
