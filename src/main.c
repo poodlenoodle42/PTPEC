@@ -46,7 +46,6 @@ int main(int argc, char* argv[]){
 
 
     cnd_init(&sigint);
-
     struct sigaction act;
     act.sa_handler = sigint_handler;
     sigaction(SIGINT, &act, NULL);

@@ -9,6 +9,7 @@ Array* array_new(size_t init_size){
     arr->capacity = init_size;
     arr->size = 0;
     arr->buff = malloc(init_size*sizeof(Client_Info));
+    return arr;
 }
 
 void array_add(Array* arr,const Client_Info *s){

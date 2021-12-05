@@ -9,9 +9,9 @@ DEPS := $(OBJS:.o=.d)
 
 INC_DIRS :=	./include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
-LDFLAGS := -lncurses -lssl -lcrypto -pthread -lcrypt
+LDFLAGS := -lncurses -lssl -lcrypto -pthread -lcrypt -ltinfo
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -std=gnu11 -g
-CC = gcc
+CC = clang
 $(BUILD_DIR)/$(TARGET_EXEC): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS)
 
